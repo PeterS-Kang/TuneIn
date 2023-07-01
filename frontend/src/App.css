@@ -1,0 +1,59 @@
+:root {
+ --darkgrey: #1E1E1E;
+ --white: #fdfdfd
+}
+
+body {
+  background-color: var(--darkgrey);
+
+}
+
+/* Homepage */
+
+.title {
+  margin-top: 15rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.title-text {
+  color: var(--white);
+  font-weight: bold;
+  font-size: 3rem;
+}
+
+.content {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: row;
+}
+
+.buttons {
+  display: flex;
+  
+}
+
+.button {
+  margin: 20px;
+  background-color: var(--white);
+  border-radius: 30px;
+  border: none;
+  color: black;
+  padding: 15px;
+  font-size: 15px;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.4s;
+}
+
+.button:hover {
+  color:var(--white);
+  background-color: black;
+  transition: all 0.4s;
+}
+/* End of Homepage */
+
