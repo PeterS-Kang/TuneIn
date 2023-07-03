@@ -1,6 +1,7 @@
 :root {
  --darkgrey: #1E1E1E;
- --white: #fdfdfd
+ --white: #fdfdfd;
+ --BORDER_GAP: 6px;
 }
 
 body {
@@ -11,7 +12,7 @@ body {
 /* Homepage */
 
 .title {
-  margin-top: 15rem;
+  margin-top: 10rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,26 +25,65 @@ body {
 }
 
 .content {
-  margin-top: 3rem;
+  margin-top: 1rem;
   display: flex;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
-  flex-direction: row;
+}
+
+.panel {
+  flex: auto 0 0 ;
+  width: 300px;
+  background-color: rgba(10, 10, 10, 0.5);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 30px;
+}
+
+.input-container {
+  display: flex;
+  margin: 10px;
+}
+
+.input-code {
+  height: 45px;
+  width: 250px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 5px;
+  text-transform: uppercase;
+}
+
+.input-name {
+  height: 45px;
+  width: 250px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+.text {
+  color: white;
+  font-size: 15px;
 }
 
 .buttons {
-  display: flex;
-  
+  display: block;
 }
 
 .button {
-  margin: 20px;
   background-color: var(--white);
-  border-radius: 30px;
+  margin: 10px;
+  width: 250px;
+  border-radius: 5px;
   border: none;
   color: black;
   padding: 15px;
   font-size: 15px;
+  font-weight: bold;
   text-align: center;
   cursor: pointer;
   text-decoration: none;
@@ -52,8 +92,114 @@ body {
 
 .button:hover {
   color:var(--white);
-  background-color: black;
+  background-color: rgb(3, 112, 189);
   transition: all 0.4s;
 }
 /* End of Homepage */
 
+
+/* Start of Roompage */
+
+.music {
+  display: flex;
+  align-items: center;
+  justify-content: center ;
+  margin: auto;
+}
+
+.music-wrapper {
+  display: grid;
+  height: 100%;
+  margin: auto;
+  grid-gap: var(--BORDER_GAP);
+  gap: var(--BORDER_GAP);
+  grid-template-areas: 
+    "users music-player queue"
+    ". chat ."
+  ;
+}
+
+.border {
+  display: flex auto 0 0;
+  margin: auto;
+}
+
+.logo {
+  display: flex;
+  text-decoration: none;
+  grid-area: logo;
+}
+
+.logo-text {
+  color: var(--white);
+  margin: 30px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.users {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin: auto;
+  height: 100%;
+  width: 20rem;
+  grid-area: users;
+  overflow-y: auto;
+}
+
+.user-box {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  background-color: rgba(84, 84, 84, 0.5);
+  margin-bottom: 3px;
+  width: 100%;
+}
+
+.user-name {
+  margin-left: 10px;
+  color: white;
+  font-size: 15px;
+}
+
+.music-listener {
+  display: flex;
+  height: 100%;
+  width: 40rem;
+  background-color: rgba(10, 10, 10, 0.5);
+  grid-area: music-player;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.music-listener-interface {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.music-queue-chat {
+  height: 35rem;
+  width: 20rem;
+  background-color: rgba(10, 10, 10, 0.5);
+  grid-area: queue;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: column;
+}
+
+.queue {
+  margin: 10px;
+  height: 100%;
+  width: 95%;
+}
+
+.song-name {
+  color: white;
+}
