@@ -4,7 +4,7 @@ import {
 } from 'react-router-dom'
 import Homepage from './pages/Homepage'
 import './App.css'
-import Hostpage from './pages/Hostpage'
+import Roompage from './pages/Roompage'
 
 
 const App = () => {
@@ -12,7 +12,7 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Homepage />}/>
-        <Route path='/host' element={<Hostpage />}/>
+        <Route path='/room' element={<Roompage />}/>
       </Routes>
     </BrowserRouter>
   )

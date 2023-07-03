@@ -1,40 +1,46 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../api/api'
-import {Link} from 'react-router-dom'
+
 
 const Homepage = () => {
 
-    const authenticateSpotifyHost = () => {
-        const params = {
-          redirect_to: "host"
-        }
-    
-        api.get('/spotify/is-authenticated', {params})
-          .then((response) => {
-            if (!response.data.status) {
-              api.get('/spotify/get-auth-url', {params})
-                .then((response) => {
-                  window.location.replace(response.data.url)
-                })
-            }
-          })
-      }
+  let navigate = useNavigate()
 
-      const authenticateSpotifyJoin = () => {
-        const params = {
-          redirect_to: "join"
-        }
-    
-        api.get('/spotify/is-authenticated', {params})
-          .then((response) => {
-            if (!response.data.status) {
-              api.get('/spotify/get-auth-url', {params})
-                .then((response) => {
-                  window.location.replace(response.data.url)
-                })
-            }
-          })
-      }
+  const [code, setCode] = useState()
+  const [name, setName] = useState()
+
+  const handleCodeChange = (e) => {
+    e.preventDefault()
+    let code = e.target.value
+    code = code.toUpperCase()
+    setCode(code)
+    console.log(code)
+  }
+
+  const handleNameChange = (e) => {
+    e.preventDefault()
+    let name = e.target.value
+    setName(name)
+    console.log(name)
+  }
+
+  const joinRoom = () => {
+    const params = {
+      code: code,
+      name: name
+    }
+    console.log(code)
+
+    api.get('/api/join-room', {params})
+      .then((response) => {
+        console.log(response.data)
+        navigate("/room", {state: code})
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }
 
   return (
     <div className='border'>
@@ -44,10 +50,21 @@ const Homepage = () => {
             </div>
         </div>
         <div className='content'>
-            <div className='buttons'>
-                <button className='button' onClick={authenticateSpotifyHost}>Create Room</button>
-                <button className='button' onClick={authenticateSpotifyJoin}>Join Room</button>
+          <div className='panel'>
+            <div className='input-container'>
+              <input className='input-name' spellCheck='false' autoComplete='off' maxLength='20' placeholder='Please Enter your Name' onChange={handleNameChange}></input>
             </div>
+            <div className='input-container'>
+              <input className='input-code' spellCheck='false' autoComplete='off' maxLength='6' placeholder='Please Enter the Room Code' onChange={handleCodeChange}></input>
+            </div>
+            <div className='buttons'>
+                <button className='button join' onClick={joinRoom}>Join Room</button>
+            </div>
+            <h3 className='text'>or</h3>
+            <div className='buttons'>
+                <button className='button'>Create a Private Room</button>
+            </div>
+          </div>
         </div>
     </div>
   )

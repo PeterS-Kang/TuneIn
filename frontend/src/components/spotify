@@ -1,0 +1,34 @@
+    /*
+    const authenticateSpotifyHost = () => {
+        const params = {
+          redirect_to: "host"
+        }
+    
+        api.get('/spotify/is-authenticated', {params})
+          .then((response) => {
+            if (!response.data.status) {
+              api.get('/spotify/get-auth-url', {params})
+                .then((response) => {
+                  window.location.replace(response.data.url)
+                })
+            }
+          })
+      }
+
+      const authenticateSpotifyJoin = () => {
+        const params = {
+          redirect_to: "join"
+        }
+    
+        api.get('/spotify/is-authenticated', {params})
+          .then((response) => {
+            if (!response.data.status) {
+              api.get('/spotify/get-auth-url', {params})
+                .then((response) => {
+                  window.location.replace(response.data.url)
+                })
+            }
+          })
+      }
+
+      */
