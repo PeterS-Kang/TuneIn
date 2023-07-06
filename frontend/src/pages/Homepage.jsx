@@ -30,16 +30,41 @@ const Homepage = () => {
       code: code,
       name: name
     }
+
     console.log(code)
 
     api.get('/api/join-room', {params})
       .then((response) => {
         console.log(response.data)
-        navigate("/room", {state: code})
+        navigate("/room", {state: params})
       })
       .catch((error) => {
         console.log(error)
       })
+  }
+
+  const createRoom = () => {
+    const params = {
+      name: name,
+      guest_can_pause: true,
+      votes_to_skip: 1
+    }
+
+
+
+    api.post('/api/create-room', {params})
+      .then((response) => {
+        console.log(response.data)
+        const data = {
+          code: response.data.code,
+          name: name
+        }
+        navigate("/room", {state: data})
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+
   }
 
   return (
@@ -62,7 +87,7 @@ const Homepage = () => {
             </div>
             <h3 className='text'>or</h3>
             <div className='buttons'>
-                <button className='button'>Create a Private Room</button>
+                <button className='button' onClick={createRoom}>Create a Private Room</button>
             </div>
           </div>
         </div>
