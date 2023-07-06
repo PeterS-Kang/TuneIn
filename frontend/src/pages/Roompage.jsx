@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { client, w3cwebsocket } from 'websocket'
 import { Link } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 import api from '../api/api'
@@ -10,24 +11,47 @@ const Roompage = () => {
     const [isHost, setIsHost] = useState()
 
     const location = useLocation()
-    console.log(location.state)
 
     useEffect(() => {
         getRoomDetails()
-    }, [users.length])
+        connect()
+    }, [])
+
+    const connect = () => {
+        const socket = new w3cwebsocket('ws://localhost:8000/ws/room/' + location.state.code + "/" + location.state.name + "/")
+
+        //handle connection open
+        socket.onopen = () => {
+            console.log('Websocket client connected')
+        }
+
+        socket.onmessage = (res) => {
+            let data = JSON.parse(res.data)
+            data = data["payload"]
+            let event = data["event"]
+            let message = data["message"]
+            console.log(message)
+
+            switch (event) {
+                case "users_updated":
+                    getUsersInRoom()
+            }
+            console.log('Received:', message.data)
+        }
+
+        return () => {
+            socket.close()
+        }
+    }
 
     const getRoomDetails = () => {
-        console.log(location.state)
         const params = {
-            code: location.state
+            code: location.state.code
         }
 
         api.get('/api/get-room', {params})
             .then((response) => {
-                console.log(response.data)
-                const user_arr = response.data.users
-                setUsers(user_arr)
-                console.log(users)
+                setUsers(response.data.users)
                 setIsHost(response.data.host)
                 setGuestCanPause(response.data.guest_can_pause)
                 setVotesToSkip(response.data.votes_to_skip)
@@ -36,7 +60,18 @@ const Roompage = () => {
                 console.log(error)
             })
     }
-    
+
+    const getUsersInRoom = () => {
+        const params = {
+            code: location.state.code
+        }
+
+        api.get('/api/get-users', {params})
+            .then((response) => {
+                console.log(response.data.users)
+                setUsers(response.data.users)
+            })
+    }
 
   return (
     <div className='border'>
@@ -48,7 +83,7 @@ const Roompage = () => {
                 <div className='users'>
                     {users.map((user) => {
                         return (
-                            <div className='user-box'>
+                            <div className='user-box' key={user}>
                                 <h4 className='user-name'>
                                     {user}
                                 </h4>
