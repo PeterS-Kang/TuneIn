@@ -5,15 +5,20 @@ import {
 import Homepage from './pages/Homepage'
 import './App.css'
 import Roompage from './pages/Roompage'
+import { RoomContextProvider } from './context/RoomContext'
+import SpotifyPage from './pages/SpotifyPage'
 
 
 const App = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Homepage />}/>
-        <Route path='/room' element={<Roompage />}/>
-      </Routes>
+      <RoomContextProvider>
+        <Routes>
+          <Route path='/' element={<Homepage />}/>
+          <Route path='/room' element={<Roompage />}/>
+          <Route path='/auth' element={<SpotifyPage/>}/>
+        </Routes>
+      </RoomContextProvider>
     </BrowserRouter>
   )
 }
