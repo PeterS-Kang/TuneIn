@@ -1,24 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import { client, w3cwebsocket } from 'websocket'
-import { Link } from 'react-router-dom'
-import { useLocation } from 'react-router-dom'
+import { Link, useNavigate} from 'react-router-dom'
 import api from '../api/api'
+import WebPlayback from '../components/WebPlayback'
+
 const Roompage = () => {
 
+    const name = sessionStorage.getItem("name")
+    const code = sessionStorage.getItem("code")
+    const userID = sessionStorage.getItem("userID")
+    const [authToken, setAuthToken] = useState()
     const [users, setUsers] = useState([])
     const [guestCanPause, setGuestCanPause] = useState()
     const [votesToSkip, setVotesToSkip] = useState()
     const [isHost, setIsHost] = useState()
 
-    const location = useLocation()
+    const navigate = useNavigate()
+    
 
     useEffect(() => {
         getRoomDetails()
         connect()
     }, [])
 
+    useEffect(() => {
+        getAuthToken()
+    }, [authToken])
+
     const connect = () => {
-        const socket = new w3cwebsocket('ws://localhost:8000/ws/room/' + location.state.code + "/" + location.state.name + "/")
+        const socket = new w3cwebsocket('ws://localhost:8000/ws/room/' + code + "/" + name + "/")
 
         //handle connection open
         socket.onopen = () => {
@@ -44,9 +54,10 @@ const Roompage = () => {
         }
     }
 
+
     const getRoomDetails = () => {
         const params = {
-            code: location.state.code
+            code: code
         }
 
         api.get('/api/get-room', {params})
@@ -63,7 +74,7 @@ const Roompage = () => {
 
     const getUsersInRoom = () => {
         const params = {
-            code: location.state.code
+            code: code
         }
 
         api.get('/api/get-users', {params})
@@ -73,7 +84,22 @@ const Roompage = () => {
             })
     }
 
-  return (
+    const getAuthToken = () => {
+        const params = {
+            userID: userID
+        }
+        api.get('/spotify/get-auth-token', {params})
+            .then((response) => {
+                setAuthToken(response.data.token)
+                sessionStorage.setItem("authToken", response.data.token)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }
+
+  if (authToken != null) {
+    return (
     <div className='border'>
         <div className='logo'>
             <Link className='logo-text' to="/">TuneIn</Link>
@@ -92,20 +118,7 @@ const Roompage = () => {
                     })}
                 </div>
                 <div className='music-listener'>
-                    <div className='music-listener-interface'>
-                        <div className='song-name'>
-                            <h2>Song name</h2>
-                        </div>
-                        <div className='song-tools'>
-                            <button>skip left</button>
-                            <button>Play</button>
-                            <button>skip right</button>
-                        </div>
-                        <div className='song-progress'>
-
-                        </div>
-                    </div>
-
+                    <WebPlayback token={authToken}/>
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
@@ -116,6 +129,7 @@ const Roompage = () => {
         </div>
     </div>
   )
+}
 }
 
 

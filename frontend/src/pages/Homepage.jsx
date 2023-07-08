@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/api'
+import { RoomInfo } from '../context/RoomContext'
 
 
 const Homepage = () => {
-
   let navigate = useNavigate()
 
   const [code, setCode] = useState()
@@ -15,6 +15,7 @@ const Homepage = () => {
     let code = e.target.value
     code = code.toUpperCase()
     setCode(code)
+    sessionStorage.setItem("code", code)
     console.log(code)
   }
 
@@ -22,6 +23,7 @@ const Homepage = () => {
     e.preventDefault()
     let name = e.target.value
     setName(name)
+    sessionStorage.setItem("name", name)
     console.log(name)
   }
 
@@ -36,7 +38,7 @@ const Homepage = () => {
     api.get('/api/join-room', {params})
       .then((response) => {
         console.log(response.data)
-        navigate("/room", {state: params})
+        navigate("/auth")
       })
       .catch((error) => {
         console.log(error)
@@ -55,11 +57,8 @@ const Homepage = () => {
     api.post('/api/create-room', {params})
       .then((response) => {
         console.log(response.data)
-        const data = {
-          code: response.data.code,
-          name: name
-        }
-        navigate("/room", {state: data})
+        sessionStorage.setItem("code", response.data.code)
+        navigate("/auth")
       })
       .catch((error) => {
         console.log(error)
