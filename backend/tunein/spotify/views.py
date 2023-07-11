@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from rest_framework.views import APIView, status
 from requests import Request, post
 from rest_framework.response import Response
-from .util import update_or_create_user_tokens, is_spotify_authenticated, get_user_tokens, generate_unique_code, change_playback_device
+from .util import update_or_create_user_tokens, is_spotify_authenticated, get_user_tokens, generate_unique_code, change_playback_device, get_available_devices
 import os
 
 load_dotenv()
@@ -60,6 +60,7 @@ class IsAuthenticated(APIView):
 class GetAuthToken(APIView):
     def get(self, request, format=None):
         userID = request.GET.get("userID")
+        is_authenticated = is_spotify_authenticated(userID)
         token = get_user_tokens(userID)
         if (token):
             return Response({"token": token.access_token}, status=status.HTTP_200_OK)
@@ -81,3 +82,12 @@ class SwitchPlayback(APIView):
             response = change_playback_device(userID, deviceID)
             return Response({'Playback Changed': response}, status=status.HTTP_200_OK)
         return Response({"Bad Request": "Params not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class GetAvailableDevices(APIView):
+    def get(self, request, format=None):
+        userID = request.GET.get("userID")
+        response = get_available_devices(userID)
+        if (userID):
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            return Response({"Bad Request": "User ID missing/invalid"})

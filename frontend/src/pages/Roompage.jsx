@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { client, w3cwebsocket } from 'websocket'
 import { Link, useNavigate} from 'react-router-dom'
 import api from '../api/api'
-import WebPlayback from '../components/WebPlayback'
+import Player from '../components/Player'
+import Search from '../components/Search'
 
 const Roompage = () => {
 
@@ -14,9 +15,7 @@ const Roompage = () => {
     const [guestCanPause, setGuestCanPause] = useState()
     const [votesToSkip, setVotesToSkip] = useState()
     const [isHost, setIsHost] = useState()
-
-    const navigate = useNavigate()
-    
+    const [socketIO, setSocketIO] = useState()
 
     useEffect(() => {
         getRoomDetails()
@@ -28,8 +27,7 @@ const Roompage = () => {
     }, [authToken])
 
     const connect = () => {
-        const socket = new w3cwebsocket('ws://localhost:8000/ws/room/' + code + "/" + name + "/")
-
+        const socket = new w3cwebsocket('ws://localhost:8000/ws/room/' + code + "/" + name + "/" + userID + "/")
         //handle connection open
         socket.onopen = () => {
             console.log('Websocket client connected')
@@ -45,9 +43,12 @@ const Roompage = () => {
             switch (event) {
                 case "users_updated":
                     getUsersInRoom()
+                    break
             }
             console.log('Received:', message.data)
         }
+
+        setSocketIO(socket)
 
         return () => {
             socket.close()
@@ -107,6 +108,11 @@ const Roompage = () => {
         <div className='music'>
             <div className='music-wrapper'>
                 <div className='users'>
+                    <div className='user-box'>
+                        <h4 className='user-name'>
+                            Room: {code}
+                        </h4>
+                    </div>
                     {users.map((user) => {
                         return (
                             <div className='user-box' key={user}>
@@ -118,11 +124,11 @@ const Roompage = () => {
                     })}
                 </div>
                 <div className='music-listener'>
-                    <WebPlayback token={authToken}/>
+                    <Player/>
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
-
+                        <Search/>
                     </div>
                 </div>
             </div>
