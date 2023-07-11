@@ -38,7 +38,7 @@ def is_spotify_authenticated(userID):
     tokens = get_user_tokens(userID)
     if tokens:
         expiry = tokens.expires_in
-        if expiry <= timezone.now:
+        if expiry <= timezone.now():
             refresh_spotify_token(userID)
         return True
     return False
@@ -73,6 +73,7 @@ def generate_unique_code(name):
 
 def execute_spotify_api_request(userID, endpoint, params=None, post_=False, put_=False):
     tokens = get_user_tokens(userID)
+    print(tokens.access_token)
     print(tokens)
     headers = {'Content-Type': 'application/json',
                'Authorization': "Bearer " + tokens.access_token}
@@ -86,6 +87,7 @@ def execute_spotify_api_request(userID, endpoint, params=None, post_=False, put_
     
     response = get(BASE_URL + endpoint, params=params, headers=headers)
     try:
+        print(response.json())
         return response.json()
     except:
         return {'Error': 'Issue with request'}
@@ -96,3 +98,6 @@ def change_playback_device(userID, deviceID):
         'play': 'true'
     }
     return execute_spotify_api_request(userID, "player", params, put_=True)
+
+def get_available_devices(userID):
+    return execute_spotify_api_request(userID, "player/devices")
