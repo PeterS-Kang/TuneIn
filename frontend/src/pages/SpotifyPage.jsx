@@ -5,39 +5,31 @@ import { RoomInfo } from '../context/RoomContext'
 
 const SpotifyPage = () => {
   const name = sessionStorage.getItem("name")
-  const [userID, setUserID] = useState()
+  const userID = sessionStorage.getItem("userID")
 
   const authenticateSpotify = () => {
     const params = {
-      name: name
+      userID: userID
     }
 
     
-    api.get('/spotify/get-user-id', {params})
+    api.get('/spotify/is-authenticated', {params})
       .then((response) => {
-        const userID = response.data.code
-        sessionStorage.setItem("userID", userID)
-        
-        api.get('/spotify/is-authenticated', {params: {userID: userID}})
-          .then((response) => {
-            if (!response.data.status) {
-              api.get('/spotify/get-auth-url', {params: {userID: userID}})
-                .then((response) => {
-                  window.location.replace(response.data.url)
-                })
-                .catch((error) => {
-                  console.log(error)
-                })
-            }
-          })
-          .catch((error) => {
-            console.log(error)
-          })
-      })
-      .catch((error) => {
-        console.log(error)
-      })
+        if (!response.data.status) {
+          api.get('/spotify/get-auth-url', {params})
+            .then((response) => {
+              window.location.replace(response.data.url)
+            })
+            .catch((error) => {
+              console.log(error)
+            })
+          }
+        })
+        .catch((error) => {
+          console.log(error)
+        })
   }
+  
 
   useEffect(() => {
     authenticateSpotify()

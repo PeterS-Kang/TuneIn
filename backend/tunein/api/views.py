@@ -22,13 +22,11 @@ class CreateRoomView(APIView):
         guest_can_pause = params.get('guest_can_pause')
         votes_to_skip = params.get('votes_to_skip')
         name = params.get('name')
-
-        if not self.request.session.exists(self.request.session.session_key):
-            self.request.session.create()
+        userID = params.get('userID')
         
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            host = self.request.session.session_key
+            host = userID
             
             queryset = Room.objects.filter(host=host)
             if queryset.exists():
@@ -50,11 +48,12 @@ class GetRoomView(APIView):
 
     def get(self, request, format=None):
         code = request.GET.get('code')
+        userID = request.GET.get('userID')
         if (code != None):
             room = Room.objects.filter(code=code)
             if (len(room) > 0):
                 data = RoomSerializer(room[0]).data
-                data['is_host'] = self.request.session.session_key == room[0].host
+                data['is_host'] = userID == room[0].host
 
                 users_in_room = room[0].users.all()
                 user_array = []
@@ -77,12 +76,13 @@ class JoinRoomView(APIView):
 
     def get(self, request, format=None):
         code = request.GET.get('code')
+        userID = request.GET.get('userID')
 
         if (code != None):
             room = Room.objects.filter(code=code)
             if (len(room) > 0):
                 data = RoomSerializer(room[0]).data
-                data['is_host'] = self.request.session.session_key == room[0].host
+                data['is_host'] = userID == room[0].host
 
                 return Response(data, status=status.HTTP_200_OK)
             return Response({"Room Not Found": "Invalid Room Code"}, status=status.HTTP_404_NOT_FOUND)

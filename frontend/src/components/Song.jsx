@@ -8,16 +8,21 @@ const Song = ({paused}) => {
 
     useEffect(() => {
         console.log(paused)
-        spinnerRef.current.style.animationPlayState = paused ? 'paused': 'running'
+        try {
+            spinnerRef.current.style.animationPlayState = paused ? 'paused': 'running'
+        } catch (error) {
+            console.log(error)
+        }
     }, [paused])
 
-    if (playbackState === null) return null
 
   return (
     <div className='song-container'>
-        <div ref={spinnerRef} className='disc'>
-            <div className='disc-image'>
-                <img  src={playbackState.context.metadata.current_item.images[0].url}/>
+        <div className='disc-under'>
+            <div ref={spinnerRef} className='disc'>
+                <div className='disc-image'>
+                    <img src={playbackState.context.metadata.current_item.images[0].url}/>
+                </div>
             </div>
         </div>
         <div className='song-info'>
@@ -31,5 +36,6 @@ const Song = ({paused}) => {
     </div>
   )
 }
+
 
 export default Song
