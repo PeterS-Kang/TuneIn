@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import { client, w3cwebsocket } from 'websocket'
-import { Link, useNavigate} from 'react-router-dom'
+import React, { useEffect, useState, useCallback } from 'react'
+import { w3cwebsocket } from 'websocket'
+import { json, Link } from 'react-router-dom'
 import api from '../api/api'
 import Player from '../components/Player'
 import Search from '../components/Search'
+import { WebPlaybackSDK } from 'react-spotify-web-playback-sdk'
+import axios from 'axios'
 
 const Roompage = () => {
 
@@ -12,10 +14,30 @@ const Roompage = () => {
     const userID = sessionStorage.getItem("userID")
     const [authToken, setAuthToken] = useState()
     const [users, setUsers] = useState([])
-    const [guestCanPause, setGuestCanPause] = useState()
-    const [votesToSkip, setVotesToSkip] = useState()
     const [isHost, setIsHost] = useState()
     const [socketIO, setSocketIO] = useState()
+    const [queue, setQueue] = useState([])
+    const [timestamp, setTimestamp] = useState(0) 
+    const [shouldUpdateUsersMusic, setShouldUpdateUsersMusic] = useState(false)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const params = {
+                    userID: userID,
+                }
+
+                const response = await api.get('/spotify/get-auth-token', {params})
+                const authToken = response.data.token
+                setAuthToken(authToken)
+                sessionStorage.setItem('authToken', authToken)
+            } catch(error) {
+                console.log(error)
+            }
+        }
+
+        fetchData()
+    }, [])
 
     useEffect(() => {
         getRoomDetails()
@@ -23,11 +45,15 @@ const Roompage = () => {
     }, [])
 
     useEffect(() => {
-        getAuthToken()
-    }, [authToken])
+        if (shouldUpdateUsersMusic) {
+            updateNewUsersMusic(socketIO)
+            setShouldUpdateUsersMusic(false)
+        }
+    }, [shouldUpdateUsersMusic, socketIO])
 
     const connect = () => {
         const socket = new w3cwebsocket('ws://localhost:8000/ws/room/' + code + "/" + name + "/" + userID + "/")
+        setSocketIO(socket)
         //handle connection open
         socket.onopen = () => {
             console.log('Websocket client connected')
@@ -40,33 +66,41 @@ const Roompage = () => {
             let message = data["message"]
             console.log(message)
 
-            switch (event) {
-                case "users_updated":
-                    getUsersInRoom()
-                    break
+            if (event === "users_updated") {
+                getUsersInRoom()
+                if (message.slice(message.indexOf(" ") + 1) === "has connected") {
+                    setShouldUpdateUsersMusic(true)
+                }
             }
-            console.log('Received:', message.data)
-        }
 
-        setSocketIO(socket)
+            if (event === "update_user_music") {
+                if (message !== undefined) {
+                    try {
+                        console.log("abc", message)
+                        const queue = JSON.parse(message)
+                        setQueue(queue)
+                    } catch (error) {
+                        console.log(error)
+                    }
+                }
+            }
+        }
 
         return () => {
             socket.close()
         }
     }
 
-
     const getRoomDetails = () => {
         const params = {
-            code: code
+            code: code,
+            userID: userID
         }
-
         api.get('/api/get-room', {params})
             .then((response) => {
                 setUsers(response.data.users)
-                setIsHost(response.data.host)
-                setGuestCanPause(response.data.guest_can_pause)
-                setVotesToSkip(response.data.votes_to_skip)
+
+                setIsHost(() => response.data.host === userID)
             })
             .catch((error) => {
                 console.log(error)
@@ -80,30 +114,100 @@ const Roompage = () => {
 
         api.get('/api/get-users', {params})
             .then((response) => {
-                console.log(response.data.users)
                 setUsers(response.data.users)
-            })
-    }
-
-    const getAuthToken = () => {
-        const params = {
-            userID: userID
-        }
-        api.get('/spotify/get-auth-token', {params})
-            .then((response) => {
-                setAuthToken(response.data.token)
-                sessionStorage.setItem("authToken", response.data.token)
             })
             .catch((error) => {
                 console.log(error)
             })
     }
 
+    const updateNewUsersMusic = useCallback(async(socket) => {
+        try {
+            await getAuthToken()
+            let queue = await getMyQueue()
+            let timestamp = await getCurrentTimestamp()
+
+            console.log(queue)
+            console.log(timestamp)
+
+            const jsonString = JSON.stringify(queue)
+            if (queue !== undefined) {
+                socket.send(JSON.stringify({
+                    event: "update_user_music",
+                    message: jsonString,
+                    time: timestamp
+                }))
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }, [queue, timestamp])
+
+    const getAuthToken = async () => {
+        try {
+          const params = {
+            userID: userID,
+          };
+
+          console.log("userID",userID)
+          const response = await api.get('/spotify/get-auth-token', { params });
+          const authToken = response.data.token;
+          console.log("getAuthtoken:", authToken)
+          setAuthToken(authToken);
+          sessionStorage.setItem('authToken', authToken);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      
+      const getMyQueue = async () => {
+        try {
+          const authToken = sessionStorage.getItem("authToken")
+          console.log('getMyqueue:', authToken);
+          const response = await axios.get('https://api.spotify.com/v1/me/player/queue', {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+          return(response.data.queue.map((track) => track.uri));
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      
+      const getCurrentTimestamp = async () => {
+        try {
+            const authToken = sessionStorage.getItem("authToken")
+            console.log("getcurrenttime:", authToken)
+          const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+          console.log(response.data.timestamp);
+          return(response.data.timestamp);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      
+
+    const disconnect = () => {
+        socketIO.close()
+    }
+    
+    const getOAuthToken = useCallback(callback => callback(authToken), [authToken])
+
   if (authToken != null) {
     return (
+    <WebPlaybackSDK
+    initialDeviceName='Spotify Player'
+    getOAuthToken={getOAuthToken}
+    volume={0.5}
+    connectOnInitialized={true}>  
     <div className='border'>
         <div className='logo'>
-            <Link className='logo-text' to="/">TuneIn</Link>
+            <Link className='logo-text' to="/" onClick={disconnect}>TuneIn</Link>
         </div>
         <div className='music'>
             <div className='music-wrapper'>
@@ -124,16 +228,17 @@ const Roompage = () => {
                     })}
                 </div>
                 <div className='music-listener'>
-                    <Player/>
+                    <Player socket={socketIO} isHost={isHost} queue={queue}/>
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
-                        <Search/>
+                        <Search queueFetched={queue} isHost={isHost}/>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    </WebPlaybackSDK>  
   )
 }
 }

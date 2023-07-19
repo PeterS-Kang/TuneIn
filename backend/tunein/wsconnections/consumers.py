@@ -71,8 +71,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
         response = json.loads(text_data)
         event = response.get("event", None)
         message = response.get("message", None)
+        time = response.get("time", 0)
 
-        print(message)
+
+        print("message", message)
+        print("time", time)
+
         
 
         #Music state has been toggled(play/pause/skip/prev)
@@ -82,6 +86,16 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 'message': message,
                 "event": "toggle"
             })
+
+        if (event == "update_user_music"):
+            await self.channel_layer.group_send(self.room_group_name, {
+                'type': 'update_player',
+                'message': message,
+                'event': event,
+                'time': time
+            })
+        
+        
     
 
     async def update_users(self, res):

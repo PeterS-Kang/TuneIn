@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/api'
-import { RoomInfo } from '../context/RoomContext'
 
 
 const Homepage = () => {
@@ -28,42 +27,51 @@ const Homepage = () => {
   }
 
   const joinRoom = () => {
-    const params = {
-      code: code,
-      name: name
-    }
-
-    console.log(code)
-
-    api.get('/api/join-room', {params})
+    api.get('/spotify/get-user-id', {params: {name: name}})
       .then((response) => {
-        console.log(response.data)
-        navigate("/auth")
-      })
-      .catch((error) => {
-        console.log(error)
+        const userID = response.data.code
+        sessionStorage.setItem("userID", userID)
+
+        const params = {
+          code: code,
+          userID: userID
+        }
+
+        api.get('/api/join-room', {params})
+        .then((response) => {
+          console.log(response.data)
+          navigate("/auth")
+        })
+        .catch((error) => {
+          console.log(error)
+        })
       })
   }
 
   const createRoom = () => {
-    const params = {
-      name: name,
-      guest_can_pause: true,
-      votes_to_skip: 1
-    }
 
-
-
-    api.post('/api/create-room', {params})
+    api.get('/spotify/get-user-id', {params: {name: name}})
       .then((response) => {
-        console.log(response.data)
-        sessionStorage.setItem("code", response.data.code)
-        navigate("/auth")
-      })
-      .catch((error) => {
-        console.log(error)
-      })
+        const userID = response.data.code
+        sessionStorage.setItem("userID", userID)
 
+        const params = {
+          name: name,
+          guest_can_pause: true,
+          votes_to_skip: 1,
+          userID: userID
+        }
+
+        api.post('/api/create-room', {params})
+        .then((response) => {
+          console.log(response.data)
+          sessionStorage.setItem("code", response.data.code)
+          navigate("/auth")
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+      })
   }
 
   return (

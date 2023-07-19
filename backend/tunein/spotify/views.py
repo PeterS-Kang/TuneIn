@@ -60,6 +60,7 @@ class IsAuthenticated(APIView):
 class GetAuthToken(APIView):
     def get(self, request, format=None):
         userID = request.GET.get("userID")
+        print(userID)
         is_authenticated = is_spotify_authenticated(userID)
         token = get_user_tokens(userID)
         if (token):

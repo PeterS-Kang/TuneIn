@@ -169,11 +169,12 @@ body {
   display: flex;
   height: 100%;
   width: 40rem;
-  background-color: rgba(10, 10, 10, 0.5);
+  background-color: rgba(96, 90, 90, 0.5);
   grid-area: music-player;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  border: 3px black;
 }
 
 .music-listener-interface {
@@ -181,6 +182,7 @@ body {
   justify-content: center;
   align-items: center;
   flex-direction: row;
+  filter: drop-shadow(5px 5px 10px #000);
 }
 
 .music-queue-chat {
@@ -233,6 +235,14 @@ body {
   width: 100%;
 }
 
+.disc-under {
+  height: 300px;
+  width: 300px;
+  border-radius: 100%;
+  background-color: rgba(15, 14, 14, 0.9);
+  filter: drop-shadow(5px 5px 10px #000);
+}
+
 .disc {
   background-color: #000;
   height: 300px;
@@ -245,17 +255,16 @@ body {
   border-radius: 100%;
   background: conic-gradient(transparent 0deg 10deg,
   rgba(255, 255, 255, .1) 40deg 45deg,
-  transparent 75deg 190deg,
+  rgba(0,0,0,0.2) 75deg 190deg,
   rgba(255, 255, 255, .1) 220deg 225deg,
-  transparent 255deg 360deg),
-  repeating-radial-gradient(circle, rgb(12, 12, 12), rgb(0, 0, 0), 1px, transparent 1px, transparent 5px)
-;
+  rgba(0,0,0,0.2) 255deg 360deg),
+  repeating-radial-gradient(circle, rgb(12, 12, 12), rgb(0, 0, 0), 1px, transparent 1px, transparent 5px);
 }
 
 .disc-image{
   background-color: transparent;
-  height: 150px;
-  width: 150px;
+  height: 130px;
+  width: 130px;
 }
 
 .disc img {
@@ -307,25 +316,92 @@ body {
   background-color:transparent;
   border: transparent;
   display:inline-block;
-  cursor:pointer;
-  color: white;
+  color: rgba(255, 255, 255, 0.803);
   font-family:Arial;
   font-size:17px;
   padding:10px;
   text-decoration:none;
+  opacity: 0.2;
+  cursor:not-allowed;
 }
 
-.btn-spotify:active {
-  position:relative;
-  top:1px;
+.btn-spotify-active {
+  opacity: 1;
+  cursor:pointer;
 }
+
+.btn-spotify-active:hover {
+  transition: ease-in-out 0.3s;
+  color: white;
+  transform: scale(1.1);
+}
+
 
 /* End of WebPlayer */
 
 /* Search component */
 .img-box {
+  margin: 4px;
   height: 50px;
   width: 50px;
   border: #000;
 }
+
+.search-bar {
+  width: 85%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  border-radius: 60px;
+  padding: 2px 20px;
+}
+
+.search-box {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  background-color: rgba(84, 84, 84, 0.5);
+  margin-bottom: 3px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.search-box:hover {
+  background-color: rgb(30, 29, 29);
+  transition: ease-in-out 0.2s;
+}
+
+.search-input-container {
+  width: 95%;
+  height: 30px;
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-size: 15px;
+  color: #cac7ff;
+}
+
+.search-results-container {
+  margin-top: 10px;
+}
 /* End of Search Component */
+
+
+/* Queue component */
+.queue-container {
+  height: 500px;
+  margin-top: 10px;
+  overflow-y: scroll;
+}
+
+.queue-box {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  background-color: rgba(84, 84, 84, 0.5);
+  margin-bottom: 3px;
+  width: 100%;
+}
+/* End of Queue Component */
