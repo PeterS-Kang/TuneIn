@@ -25,6 +25,7 @@ const Roompage = () => {
     const [currentSong, setCurrentSong] = useState()
     const [timestamp, setTimestamp] = useState(0) 
     const [shouldUpdateUsersMusic, setShouldUpdateUsersMusic] = useState(false)
+    const [isPausedByHost, setIsPausedByHost] = useState(false)
 
     useEffect(() => {
         SpotifyAPI.setAccessToken(authToken) 
@@ -94,6 +95,17 @@ const Roompage = () => {
                         setQueue(queue)
                     } catch (error) {
                         console.log(error)
+                    }
+                }
+            }
+            if (event === "toggle") {
+                if (!isHost) {
+                    if (message !== "" && message !== undefined) {
+                        if (message.paused) {
+                            setIsPausedByHost(true)
+                        } else {
+                            setIsPausedByHost(false)
+                        }
                     }
                 }
             }
@@ -244,7 +256,7 @@ const Roompage = () => {
                     })}
                 </div>
                 <div className='music-listener'>
-                    <Player socket={socketIO} isHost={isHost} currentSong={currentSong} SpotifyAPI={SpotifyAPI}/>
+                    <Player socket={socketIO} isHost={isHost} currentSong={currentSong} SpotifyAPI={SpotifyAPI} isPausedByHost={isPausedByHost}/>
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
