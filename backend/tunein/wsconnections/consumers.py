@@ -71,11 +71,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
         response = json.loads(text_data)
         event = response.get("event", None)
         message = response.get("message", None)
-        time = response.get("time", 0)
 
 
         print("message", message)
-        print("time", time)
+        print("event", event)
 
         
 
@@ -88,11 +87,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
             })
 
         if (event == "update_user_music"):
+            currentSong = response.get("currentSong")
             await self.channel_layer.group_send(self.room_group_name, {
                 'type': 'update_player',
                 'message': message,
                 'event': event,
-                'time': time
+                'currentSong': currentSong
             })
         
         
