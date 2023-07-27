@@ -5,6 +5,7 @@ import api from '../api/api'
 import Player from '../components/Player'
 import Search from '../components/Search'
 import { WebPlaybackSDK } from 'react-spotify-web-playback-sdk'
+import SpotifyWebApi from 'spotify-web-api-js'
 import axios from 'axios'
 
 const Roompage = () => {
@@ -12,13 +13,22 @@ const Roompage = () => {
     const name = sessionStorage.getItem("name")
     const code = sessionStorage.getItem("code")
     const userID = sessionStorage.getItem("userID")
+    var SpotifyAPI = new SpotifyWebApi()
+    
+
+
     const [authToken, setAuthToken] = useState()
     const [users, setUsers] = useState([])
     const [isHost, setIsHost] = useState()
     const [socketIO, setSocketIO] = useState()
     const [queue, setQueue] = useState([])
+    const [currentSong, setCurrentSong] = useState()
     const [timestamp, setTimestamp] = useState(0) 
     const [shouldUpdateUsersMusic, setShouldUpdateUsersMusic] = useState(false)
+
+    useEffect(() => {
+        SpotifyAPI.setAccessToken(authToken) 
+    }, [authToken])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -74,8 +84,11 @@ const Roompage = () => {
             }
 
             if (event === "update_user_music") {
-                if (message !== undefined) {
+                if (message !== "") {
                     try {
+                        const currentSongParsed = JSON.parse(data["currentSong"])
+                        console.log(currentSongParsed)
+                        setCurrentSong(currentSongParsed)
                         console.log("abc", message)
                         const queue = JSON.parse(message)
                         setQueue(queue)
@@ -121,21 +134,23 @@ const Roompage = () => {
             })
     }
 
+
     const updateNewUsersMusic = useCallback(async(socket) => {
         try {
             await getAuthToken()
             let queue = await getMyQueue()
-            let timestamp = await getCurrentTimestamp()
+            let currentSong = await getCurrentTimestamp()
 
             console.log(queue)
             console.log(timestamp)
 
-            const jsonString = JSON.stringify(queue)
+            const jsonStringQueue = JSON.stringify(queue)
+            const jsonStringCurrentSong = JSON.stringify(currentSong)
             if (queue !== undefined) {
                 socket.send(JSON.stringify({
                     event: "update_user_music",
-                    message: jsonString,
-                    time: timestamp
+                    message: jsonStringQueue,
+                    currentSong: jsonStringCurrentSong
                 }))
             }
         } catch (error) {
@@ -169,7 +184,8 @@ const Roompage = () => {
               Authorization: `Bearer ${authToken}`,
             },
           });
-          return(response.data.queue.map((track) => track.uri));
+          console.log(response.data.queue)
+          return(response.data.queue);
         } catch (error) {
           console.log(error);
         }
@@ -177,15 +193,15 @@ const Roompage = () => {
       
       const getCurrentTimestamp = async () => {
         try {
-            const authToken = sessionStorage.getItem("authToken")
-            console.log("getcurrenttime:", authToken)
+          const authToken = sessionStorage.getItem("authToken")
+          console.log("getcurrenttime:", authToken)
           const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
             headers: {
               Authorization: `Bearer ${authToken}`,
             },
           });
-          console.log(response.data.timestamp);
-          return(response.data.timestamp);
+          console.log("!!!!!!:",response.data);
+          return(response.data);
         } catch (error) {
           console.log(error);
         }
@@ -228,11 +244,11 @@ const Roompage = () => {
                     })}
                 </div>
                 <div className='music-listener'>
-                    <Player socket={socketIO} isHost={isHost} queue={queue}/>
+                    <Player socket={socketIO} isHost={isHost} currentSong={currentSong} SpotifyAPI={SpotifyAPI}/>
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
-                        <Search queueFetched={queue} isHost={isHost}/>
+                        <Search queueFetched={queue} isHost={isHost} SpotifyAPI={SpotifyAPI}/>
                     </div>
                 </div>
             </div>

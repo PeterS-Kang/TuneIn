@@ -1,11 +1,9 @@
 import axios from 'axios'
 import React, { useEffect, useState, useCallback } from 'react'
 import { usePlaybackState, usePlayerDevice } from 'react-spotify-web-playback-sdk'
-import SpotifyWebApi from 'spotify-web-api-js'
 
-const Search = ({queueFetched, isHost}) => {
+const Search = ({queueFetched, isHost, SpotifyAPI}) => {
     const AUTH_TOKEN = sessionStorage.getItem("authToken")
-    var spotifyAPI = new SpotifyWebApi()
     const device_id = sessionStorage.getItem("deviceID")
 
     const [searchResults, setSearchResults] = useState([])
@@ -15,11 +13,9 @@ const Search = ({queueFetched, isHost}) => {
     const playbackState = usePlaybackState()
 
     useEffect(() => {
-        spotifyAPI.setAccessToken(AUTH_TOKEN) 
-    }, [AUTH_TOKEN])
-
-    useEffect(() => {
-        getMyQueue()
+        if (isHost) {
+            getMyQueue()
+        }
     }, [playbackState])
 
     useEffect(() => {
@@ -30,37 +26,10 @@ const Search = ({queueFetched, isHost}) => {
         if (!isHost) {
             if (queueFetched.length !== 0) {
                 console.log("queuefetched:", queueFetched)
-                if (queueFetched.length !== 0) {
-                    for (let i = 0; i < queueFetched.length; i++) {
-                        setTimeout(() => {
-                            addToQueue({uri: queueFetched[i]})
-                            console.log("added to queue:", queueFetched[i])
-                        }, 0.3 * (i + 1))
-                    }
-                }
-            }
+                setQueue(queueFetched)
+            }    
         }
     }, [queueFetched])
-
-
-
-    // const updateQueueList = async(track) => {
-    //     try {
-
-    //         console.log(AUTH_TOKEN)
-    //         const response = await axios.post('https://api.spotify.com/v1/me/player/queue', {},{
-    //             headers: {
-    //                 Authorization: `Bearer BQBg3UtGUs_XJgp7ajjrNpBdLNMsS-g4sNALkA26P58h0ZO2h8DP31ELmU5ScUhufn-OGf_fwB7rfRQH1o6Mvlj9XFYd-WRGuY6UE_ZuhV9XRfoF5MPYBhaXl_v4J6K-YDic0rsPcXeiUW-6dogj2exkEhYurwisnFLTmiJ_jR-Fg2CwCqRyEPcu-77ZdU7G04D5_P_baoLQVmQGTzs001RyNw6hODI`
-    //             },
-    //             params: {
-    //                 uri: track,
-    //             }
-    //     })
-    //         console.log("added to queue")
-    //     } catch (error) {
-    //         console.log(error)
-    //     }
-    // }
 
     const getMyQueue = () => {
         axios.get('https://api.spotify.com/v1/me/player/queue', {
@@ -83,7 +52,7 @@ const Search = ({queueFetched, isHost}) => {
             setSearching(false)
         } else {
             setSearching(true)
-            spotifyAPI.searchTracks(queryTerm, {limit: 5})
+            SpotifyAPI.searchTracks(queryTerm, {limit: 5})
             .then((response) => {
                 setSearchResults(response.tracks.items)
             })
@@ -97,7 +66,8 @@ const Search = ({queueFetched, isHost}) => {
         const options = {
             device_id: device_id
         }
-        spotifyAPI.queue(track.uri, {options})
+
+        SpotifyAPI.queue(track.uri, {options})
             .then((response) => {
                 console.log("added to queue")
                 getMyQueue()
@@ -119,7 +89,11 @@ const Search = ({queueFetched, isHost}) => {
         <div className='search-results-container'>
             {searchResults.map((track, i) => {
                 return (
-                    <div className='search-box' onClick={() => addToQueue(track)} key={i}>
+                    <div className='search-box' onClick={() => {
+                        if (isHost) {
+                            addToQueue(track)
+                        }}} 
+                        key={i}>
                         <img className='img-box' src={track.album.images[0].url}/>
                         <h4 className='user-name'>{track.name}</h4>
                     </div>
