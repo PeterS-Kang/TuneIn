@@ -2,7 +2,7 @@ import axios from 'axios'
 import React, { useEffect, useState, useCallback } from 'react'
 import { usePlaybackState, usePlayerDevice } from 'react-spotify-web-playback-sdk'
 
-const Search = ({queueFetched, isHost, SpotifyAPI}) => {
+const Search = ({queueFetched, isHost, SpotifyAPI, socket}) => {
     const AUTH_TOKEN = sessionStorage.getItem("authToken")
     const device_id = sessionStorage.getItem("deviceID")
 
@@ -39,6 +39,11 @@ const Search = ({queueFetched, isHost, SpotifyAPI}) => {
         })
         .then((response) => {
             setQueue(response.data.queue)
+            const jsonStringQueue = JSON.stringify(response.data.queue)
+            socket.send(JSON.stringify({
+                event: "update_user_queue",
+                message: jsonStringQueue,
+            }))
         })
         .catch((error) => {
             console.log(error)
@@ -92,6 +97,7 @@ const Search = ({queueFetched, isHost, SpotifyAPI}) => {
                     <div className='search-box' onClick={() => {
                         if (isHost) {
                             addToQueue(track)
+                            setSearching(false)
                         }}} 
                         key={i}>
                         <img className='img-box' src={track.album.images[0].url}/>
