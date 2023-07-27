@@ -4,6 +4,7 @@ export const StateConsumer = ({playerDevice, errorState, useWebPlaybackSDKReady,
 
     useEffect(() => {
       if (playerDevice?.device_id === undefined) return;
+
       sessionStorage.setItem("deviceID", playerDevice?.device_id)
 
       // https://developer.spotify.com/documentation/web-api/reference/#endpoint-transfer-a-users-playback

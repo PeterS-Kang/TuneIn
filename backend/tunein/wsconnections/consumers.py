@@ -94,6 +94,13 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 'event': event,
                 'currentSong': currentSong
             })
+
+        if (event == "update_user_queue"):
+            await self.channel_layer.group_send(self.room_group_name, {
+                'type': 'update_player',
+                'message': message,
+                'event': event,
+            })
         
         
     

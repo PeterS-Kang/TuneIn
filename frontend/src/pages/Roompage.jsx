@@ -109,6 +109,15 @@ const Roompage = () => {
                     }
                 }
             }
+
+            if (event === "update_user_queue") {
+                if (!isHost) {
+                    if (message !== "" && message !== undefined) {
+                        const queue = JSON.parse(message)
+                        setQueue(queue)
+                    }
+                }
+            }
         }
 
         return () => {
@@ -260,7 +269,7 @@ const Roompage = () => {
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
-                        <Search queueFetched={queue} isHost={isHost} SpotifyAPI={SpotifyAPI}/>
+                        <Search queueFetched={queue} isHost={isHost} SpotifyAPI={SpotifyAPI} socket={socketIO}/>
                     </div>
                 </div>
             </div>
