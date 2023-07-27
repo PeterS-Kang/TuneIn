@@ -8,7 +8,7 @@ import Song from './Song'
 import axiosRetry from 'axios-retry'
 import axios from 'axios'
 
-const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice, authToken, webPlaybackSDKReady}) => {
+const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice, authToken, webPlaybackSDKReady, isPausedByHost}) => {
     const player = useSpotifyPlayer()
     const playbackState = usePlaybackState()
     const deviceID = sessionStorage.getItem("deviceID")
@@ -20,7 +20,7 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
                 const newPaused = !prevPaused;
                 console.log("handle toggle", newPaused);
                 let data = {
-                  event: "playToggle",
+                  event: "toggle",
                   message: {
                     paused: newPaused,
                   },
@@ -109,6 +109,19 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
             console.log("paused", paused)
         }
     }, [])
+
+    useEffect(() => {
+      if (isPausedByHost) {
+        player.pause()
+        setPaused(true)
+      }
+      else {
+        if (playbackState?.paused) {
+          player.resume()
+          setPaused(false)
+        }
+      }
+    }, [isPausedByHost])
 
     useEffect(() => {
         const play = async() => {
