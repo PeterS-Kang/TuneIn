@@ -7,6 +7,8 @@ import Search from '../components/Search'
 import { WebPlaybackSDK } from 'react-spotify-web-playback-sdk'
 import SpotifyWebApi from 'spotify-web-api-js'
 import axios from 'axios'
+import Chat from '../components/Chat'
+import Users from '../components/Users'
 
 const Roompage = () => {
 
@@ -26,6 +28,7 @@ const Roompage = () => {
     const [timestamp, setTimestamp] = useState(0) 
     const [shouldUpdateUsersMusic, setShouldUpdateUsersMusic] = useState(false)
     const [isPausedByHost, setIsPausedByHost] = useState(false)
+    const [chatLog, setChatLog] = useState([])
 
     useEffect(() => {
         SpotifyAPI.setAccessToken(authToken) 
@@ -61,6 +64,7 @@ const Roompage = () => {
             setShouldUpdateUsersMusic(false)
         }
     }, [shouldUpdateUsersMusic, socketIO])
+
 
     const connect = () => {
         const socket = new w3cwebsocket('ws://localhost:8000/ws/room/' + code + "/" + name + "/" + userID + "/")
@@ -116,6 +120,15 @@ const Roompage = () => {
                         const queue = JSON.parse(message)
                         setQueue(queue)
                     }
+                }
+            }
+
+            if (event === "messageReceived") {
+                const senderUserID = data["userID"]
+                const senderName = data["name"]
+                console.log(senderUserID)
+                if (userID !== senderUserID) {
+                    setChatLog((prevChatArray) => [senderName + ": " + message, ...prevChatArray]);
                 }
             }
         }
@@ -211,6 +224,16 @@ const Roompage = () => {
           console.log(error);
         }
       };
+
+      const sendMessage = (message) => {
+        console.log(message)
+        socketIO.send(JSON.stringify({
+            event: "messageSent",
+            message: message,
+            userID: userID,
+            name: name
+        }))
+      }
       
       const getCurrentTimestamp = async () => {
         try {
@@ -248,21 +271,9 @@ const Roompage = () => {
         </div>
         <div className='music'>
             <div className='music-wrapper'>
-                <div className='users'>
-                    <div className='user-box'>
-                        <h4 className='user-name'>
-                            Room: {code}
-                        </h4>
-                    </div>
-                    {users.map((user) => {
-                        return (
-                            <div className='user-box' key={user}>
-                                <h4 className='user-name'>
-                                    {user}
-                                </h4>
-                            </div>
-                        )
-                    })}
+                <div className='left-panel'>
+                    <Users code={code} users={users}/>
+                    <Chat chatLog={chatLog} setChatLog={setChatLog} name={name} sendMessage={sendMessage}/>
                 </div>
                 <div className='music-listener'>
                     <Player socket={socketIO} isHost={isHost} currentSong={currentSong} SpotifyAPI={SpotifyAPI} isPausedByHost={isPausedByHost}/>

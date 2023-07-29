@@ -101,6 +101,18 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 'message': message,
                 'event': event,
             })
+
+        if (event == "messageSent"):
+            userID = response.get("userID")
+            name = response.get('name')
+            await self.channel_layer.group_send(self.room_group_name, {
+                'type': 'update_chat',
+                'message': message,
+                'event': 'messageReceived',
+                'userID': userID,
+                'name': name
+            })
+
         
         
     
@@ -113,6 +125,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def update_player(self, res):
         await self.send(text_data=json.dumps({
             "payload":res,
+        }))
+    
+    async def update_chat(self, res):
+        await self.send(text_data=json.dumps({
+            "payload": res,
         }))
 
     

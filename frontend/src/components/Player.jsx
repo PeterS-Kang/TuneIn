@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useErrorState, usePlaybackState, usePlayerDevice, useWebPlaybackSDKReady, WebPlaybackSDK } from 'react-spotify-web-playback-sdk'
 import PlayerController from './PlayerController'
 import api from '../api/api'
@@ -10,6 +10,7 @@ const Player = ({socket, isHost, currentSong, SpotifyAPI, isPausedByHost}) => {
     const webPlaybackSDKReady = useWebPlaybackSDKReady()
     const playbackState = usePlaybackState(true, 100)
     const accessToken = sessionStorage.getItem("authToken")
+
 
     return (
         <>
