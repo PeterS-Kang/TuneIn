@@ -16,7 +16,7 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket}) => {
         if (isHost) {
             getMyQueue()
         }
-    }, [playbackState])
+    }, [playbackState?.context.metadata.current_item])
 
     useEffect(() => {
         updateQueue()
@@ -39,11 +39,6 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket}) => {
         })
         .then((response) => {
             setQueue(response.data.queue)
-            const jsonStringQueue = JSON.stringify(response.data.queue)
-            socket.send(JSON.stringify({
-                event: "update_user_queue",
-                message: jsonStringQueue,
-            }))
         })
         .catch((error) => {
             console.log(error)
@@ -73,9 +68,14 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket}) => {
         }
 
         SpotifyAPI.queue(track.uri, {options})
-            .then((response) => {
+            .then(async(response) => {
                 console.log("added to queue")
-                getMyQueue()
+                await getMyQueue()
+                const jsonStringQueue = JSON.stringify(queue)
+                socket.send(JSON.stringify({
+                    event: "update_user_queue",
+                    message: jsonStringQueue,
+                }))
             })
             .catch((error) => {
                 console.log(error)
