@@ -4,12 +4,13 @@ import PlayerController from './PlayerController'
 import api from '../api/api'
 import { StateConsumer } from './StateConsumer'
 
-const Player = ({socket, isHost, currentSong, SpotifyAPI, isPausedByHost}) => {
+const Player = ({socket, isHost, currentSong, SpotifyAPI, isPausedByHost, isPausing, setIsPausing}) => {
     const playerDevice = usePlayerDevice()
     const errorState = useErrorState()
     const webPlaybackSDKReady = useWebPlaybackSDKReady()
     const playbackState = usePlaybackState(true, 100)
     const accessToken = sessionStorage.getItem("authToken")
+
 
 
     return (
