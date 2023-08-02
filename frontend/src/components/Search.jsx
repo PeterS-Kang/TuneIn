@@ -2,9 +2,10 @@ import axios from 'axios'
 import React, { useEffect, useState, useCallback } from 'react'
 import { usePlaybackState, usePlayerDevice } from 'react-spotify-web-playback-sdk'
 
-const Search = ({queueFetched, isHost, SpotifyAPI, socket}) => {
+const Search = ({queueFetched, isHost, SpotifyAPI, socket, spotifyAPIRequest}) => {
     const AUTH_TOKEN = sessionStorage.getItem("authToken")
     const device_id = sessionStorage.getItem("deviceID")
+    const queueURL = 'https://api.spotify.com/v1/me/player/queue'
 
     const [searchResults, setSearchResults] = useState([])
     const [queue, setQueue] = useState([])
@@ -13,6 +14,10 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket}) => {
     const playbackState = usePlaybackState()
 
     useEffect(() => {
+        const getMyQueue = async() => {
+            const queue = await spotifyAPIRequest(queueURL)
+            setQueue(queue.queue)
+        }
         if (isHost) {
             getMyQueue()
         }
@@ -70,7 +75,7 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket}) => {
         SpotifyAPI.queue(track.uri, {options})
             .then(async(response) => {
                 console.log("added to queue")
-                await getMyQueue()
+                await spotifyAPIRequest(queueURL)
                 const jsonStringQueue = JSON.stringify(queue)
                 socket.send(JSON.stringify({
                     event: "update_user_queue",

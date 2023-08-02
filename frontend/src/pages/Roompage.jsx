@@ -25,7 +25,6 @@ const Roompage = () => {
     const [socketIO, setSocketIO] = useState()
     const [queue, setQueue] = useState([])
     const [currentSong, setCurrentSong] = useState()
-    const [timestamp, setTimestamp] = useState(0) 
     const [shouldUpdateUsersMusic, setShouldUpdateUsersMusic] = useState(false)
     const [isPausedByHost, setIsPausedByHost] = useState(false)
     const [chatLog, setChatLog] = useState([])
@@ -79,7 +78,6 @@ const Roompage = () => {
             data = data["payload"]
             let event = data["event"]
             let message = data["message"]
-            console.log(message)
 
             if (event === "users_updated") {
                 getUsersInRoom()
@@ -92,9 +90,7 @@ const Roompage = () => {
                 if (message !== "") {
                     try {
                         const currentSongParsed = JSON.parse(data["currentSong"])
-                        console.log(currentSongParsed)
                         setCurrentSong(currentSongParsed)
-                        console.log("abc", message)
                         const queue = JSON.parse(message)
                         setQueue(queue)
                     } catch (error) {
@@ -126,7 +122,6 @@ const Roompage = () => {
             if (event === "messageReceived") {
                 const senderUserID = data["userID"]
                 const senderName = data["name"]
-                console.log(senderUserID)
                 if (userID !== senderUserID) {
                     setChatLog((prevChatArray) => [senderName + ": " + message, ...prevChatArray]);
                 }
@@ -172,13 +167,10 @@ const Roompage = () => {
     const updateNewUsersMusic = useCallback(async(socket) => {
         try {
             await getAuthToken()
-            let queue = await getMyQueue()
-            let currentSong = await getCurrentTimestamp()
+            let queue = await spotifyAPIRequest('https://api.spotify.com/v1/me/player/queue')
+            let currentSong = await spotifyAPIRequest('https://api.spotify.com/v1/me/player/currently-playing')
 
-            console.log(queue)
-            console.log(timestamp)
-
-            const jsonStringQueue = JSON.stringify(queue)
+            const jsonStringQueue = JSON.stringify(queue.queue)
             const jsonStringCurrentSong = JSON.stringify(currentSong)
             if (queue !== undefined) {
                 socket.send(JSON.stringify({
@@ -190,7 +182,7 @@ const Roompage = () => {
         } catch (error) {
             console.log(error)
         }
-    }, [queue, timestamp])
+    }, [queue])
 
     const getAuthToken = async () => {
         try {
@@ -198,35 +190,31 @@ const Roompage = () => {
             userID: userID,
           };
 
-          console.log("userID",userID)
           const response = await api.get('/spotify/get-auth-token', { params });
           const authToken = response.data.token;
-          console.log("getAuthtoken:", authToken)
           setAuthToken(authToken);
           sessionStorage.setItem('authToken', authToken);
         } catch (error) {
           console.log(error);
         }
       };
-      
-      const getMyQueue = async () => {
+
+    const spotifyAPIRequest = async(url) => {
         try {
-          const authToken = sessionStorage.getItem("authToken")
-          console.log('getMyqueue:', authToken);
-          const response = await axios.get('https://api.spotify.com/v1/me/player/queue', {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          });
-          console.log(response.data.queue)
-          return(response.data.queue);
+            const authToken = sessionStorage.getItem("authToken")
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                  },
+            })
+
+            return response.data
         } catch (error) {
-          console.log(error);
+            console.log(error)
         }
-      };
+    }
 
       const sendMessage = (message) => {
-        console.log(message)
         socketIO.send(JSON.stringify({
             event: "messageSent",
             message: message,
@@ -234,22 +222,6 @@ const Roompage = () => {
             name: name
         }))
       }
-      
-      const getCurrentTimestamp = async () => {
-        try {
-          const authToken = sessionStorage.getItem("authToken")
-          console.log("getcurrenttime:", authToken)
-          const response = await axios.get('https://api.spotify.com/v1/me/player/currently-playing', {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          });
-          console.log("!!!!!!:",response.data);
-          return(response.data);
-        } catch (error) {
-          console.log(error);
-        }
-      };
       
 
     const disconnect = () => {
@@ -280,7 +252,7 @@ const Roompage = () => {
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
-                        <Search queueFetched={queue} isHost={isHost} SpotifyAPI={SpotifyAPI} socket={socketIO}/>
+                        <Search queueFetched={queue} isHost={isHost} SpotifyAPI={SpotifyAPI} socket={socketIO} spotifyAPIRequest={spotifyAPIRequest}/>
                     </div>
                 </div>
             </div>

@@ -13,6 +13,7 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
     const playbackState = usePlaybackState()
     const deviceID = sessionStorage.getItem("deviceID")
     const [paused, setPaused] = useState(false)
+    const [currentTrack, setCurrentTrack] = useState(null)
 
     const handleToggle = () => {
         if (isHost) {
@@ -32,33 +33,30 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
       };
 
       const changeToCurrentSong = async (currentSong) => {
-        try {
-            const playbackEndpoint = 'https://api.spotify.com/v1/me/player/play?device_id=' + playerDevice?.device_id;
-            console.log(currentSong)
-            // Set the Authorization header with the access token
-            const config = {
-              headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json',
-              },
-            };
-
-            console.log("uri:", currentSong.item.uri)
+        const playbackEndpoint = 'https://api.spotify.com/v1/me/player/play?device_id=' + playerDevice?.device_id;
+        console.log(currentSong)
+        // Set the Authorization header with the access token
+        const config = {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+        };
             
-            // Create the request body
-            const requestBody = {
-              uris: [currentSong.item.uri],
-              position_ms: currentSong.progress_ms,
-            };
+        // Create the request body
+        const requestBody = {
+          uris: [currentSong.item.uri],
+          position_ms: currentSong.progress_ms,
+        };
             
-            // Make the Axios request to start/resume playback
-            const response = axios.put(playbackEndpoint, requestBody, config)
-            console.log("success")
-            console.log("resuming")
+        // Make the Axios request to start/resume playback
+        axios.put(playbackEndpoint, requestBody, config)
+          .catch((error) => {
+            console.log("got ya")
+          })
 
-        } catch (error) {
-            console.log(error)
-        }
+        console.log("success")
+        console.log("resuming")
       }
 
       const getMyQueue = async () => {
@@ -81,7 +79,6 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
         if (isHost) {
             try {
                 let queue = await getMyQueue()
-                queue.shift()
                 let currentSong = {
                     item: {
                         uri: uri
@@ -111,15 +108,27 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
     }, [])
 
     useEffect(() => {
-      if (isPausedByHost) {
-        player.pause()
-        setPaused(true)
+      if (isHost && (currentTrack !== playbackState?.context.metadata.current_item.uri)) {
+        setCurrentTrack(playbackState?.context.metadata.current_item.uri)
+        updateSongForOthers(playbackState?.context.metadata.current_item.uri)
+        console.log("bruh")
       }
-      else {
-        if (playbackState?.paused) {
-          player.resume()
-          setPaused(false)
+  }, [playbackState?.context.metadata.current_item])
+
+    useEffect(() => {
+      try {
+        if (isPausedByHost) {
+          player.pause()
+          setPaused(true)
         }
+        else {
+          if (playbackState?.paused) {
+            player.resume()
+            setPaused(false)
+          }
+        }
+      } catch (error) {
+        console.log(error)
       }
     }, [isPausedByHost])
 
@@ -154,7 +163,6 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
         <Song paused={paused}/>   
         <div className='music-listener-interface'>
             <button className={isHost ? 'btn-spotify btn-spotify-active' : 'btn-spotify'} onClick={async() => {
-                updateSongForOthers(playbackState?.context.metadata.previous_items[1].uri)
                 await player.previousTrack()
                 }} disabled={!isHost}>
                 <SkipPreviousIcon/>
@@ -167,7 +175,6 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
             </button>
             <button className={isHost ? 'btn-spotify btn-spotify-active' : 'btn-spotify'} onClick={async() => {
                 await player.nextTrack()
-                updateSongForOthers(playbackState?.context.metadata.next_items[0].uri)
                 }}>
                 <SkipNextIcon/>
             </button>
