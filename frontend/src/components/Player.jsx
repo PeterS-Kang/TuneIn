@@ -12,7 +12,6 @@ const Player = ({socket, isHost, currentSong, SpotifyAPI, isPausedByHost, isPaus
     const accessToken = sessionStorage.getItem("authToken")
 
 
-
     return (
         <>
             <PlayerController socket={socket} isHost={isHost} currentSong={currentSong} SpotifyAPI={SpotifyAPI} playerDevice={playerDevice} authToken={accessToken} webPlaybackSDKReady={webPlaybackSDKReady} isPausedByHost={isPausedByHost}/>
