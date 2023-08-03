@@ -108,10 +108,14 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
     }, [])
 
     useEffect(() => {
-      if (isHost && (currentTrack !== playbackState?.context.metadata.current_item.uri)) {
-        setCurrentTrack(playbackState?.context.metadata.current_item.uri)
-        updateSongForOthers(playbackState?.context.metadata.current_item.uri)
-        console.log("bruh")
+      try {
+        if (isHost && (currentTrack !== playbackState?.context.metadata.current_item.uri)) {
+          setCurrentTrack(playbackState?.context.metadata.current_item.uri)
+          updateSongForOthers(playbackState?.context.metadata.current_item.uri)
+          console.log("bruh")
+        }
+      } catch (error) {
+        console.log(error)
       }
   }, [playbackState?.context.metadata.current_item])
 
@@ -160,7 +164,10 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
 
   return (
     <div className='container'>
-        <Song paused={paused}/>   
+        {playbackState?.context.metadata.current_item !== undefined ? 
+        <Song paused={paused}/> :
+         <h3>Switch Spotify playback to TuneIn</h3> 
+         }
         <div className='music-listener-interface'>
             <button className={isHost ? 'btn-spotify btn-spotify-active' : 'btn-spotify'} onClick={async() => {
                 await player.previousTrack()

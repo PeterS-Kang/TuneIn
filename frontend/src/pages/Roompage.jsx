@@ -233,7 +233,7 @@ const Roompage = () => {
   if (authToken != null) {
     return (
     <WebPlaybackSDK
-    initialDeviceName='Spotify Player'
+    initialDeviceName='TuneIn'
     getOAuthToken={getOAuthToken}
     volume={0.5}
     connectOnInitialized={true}>  
