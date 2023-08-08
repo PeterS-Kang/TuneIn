@@ -14,10 +14,6 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket, spotifyAPIRequest}) =
     const playbackState = usePlaybackState()
 
     useEffect(() => {
-        const getMyQueue = async() => {
-            const queue = await spotifyAPIRequest(queueURL)
-            setQueue(queue.queue)
-        }
         if (isHost) {
             getMyQueue()
         }
@@ -75,7 +71,7 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket, spotifyAPIRequest}) =
         SpotifyAPI.queue(track.uri, {options})
             .then(async(response) => {
                 console.log("added to queue")
-                await spotifyAPIRequest(queueURL)
+                await getMyQueue()
                 const jsonStringQueue = JSON.stringify(queue)
                 socket.send(JSON.stringify({
                     event: "update_user_queue",

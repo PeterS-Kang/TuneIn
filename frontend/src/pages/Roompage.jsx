@@ -248,7 +248,7 @@ const Roompage = () => {
                     <Chat chatLog={chatLog} setChatLog={setChatLog} name={name} sendMessage={sendMessage}/>
                 </div>
                 <div className='music-listener'>
-                    <Player socket={socketIO} isHost={isHost} currentSong={currentSong} SpotifyAPI={SpotifyAPI} isPausedByHost={isPausedByHost}/>
+                    <Player socket={socketIO} isHost={isHost} currentSong={currentSong} SpotifyAPI={SpotifyAPI} isPausedByHost={isPausedByHost} />
                 </div>
                 <div className='music-queue-chat'>
                     <div className='queue'>
