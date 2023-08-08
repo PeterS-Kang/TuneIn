@@ -32,6 +32,19 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
         }
       };
 
+      const handleSkip = () => {
+        if (isHost) {
+          setPaused(false)
+          let data = {
+            event: "toggle",
+            message: {
+              paused: false
+            }
+          }
+          socket.send(JSON.stringify(data))
+        }
+      }
+
       const changeToCurrentSong = async (currentSong) => {
         const playbackEndpoint = 'https://api.spotify.com/v1/me/player/play?device_id=' + playerDevice?.device_id;
         console.log(currentSong)
@@ -170,8 +183,10 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
          }
         <div className='music-listener-interface'>
             <button className={isHost ? 'btn-spotify btn-spotify-active' : 'btn-spotify'} onClick={async() => {
-                await player.previousTrack()
-                }} disabled={!isHost}>
+                player.previousTrack()
+                handleSkip()
+                }} 
+                disabled={!isHost}>
                 <SkipPreviousIcon/>
             </button>
             <button className={isHost ? 'btn-spotify btn-spotify-active' : 'btn-spotify'} disabled={!isHost} onClick={(() => {
@@ -181,8 +196,10 @@ const PlayerController = ({socket, isHost, currentSong, SpotifyAPI, playerDevice
                 {paused ? <PlayArrowIcon/> : <PauseIcon/>}
             </button>
             <button className={isHost ? 'btn-spotify btn-spotify-active' : 'btn-spotify'} onClick={async() => {
-                await player.nextTrack()
-                }}>
+                player.nextTrack()
+                handleSkip()
+                }} 
+                disabled={!isHost}>
                 <SkipNextIcon/>
             </button>
         </div>

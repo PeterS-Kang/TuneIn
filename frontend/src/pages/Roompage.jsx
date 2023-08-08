@@ -58,7 +58,7 @@ const Roompage = () => {
     }, [])
 
     useEffect(() => {
-        if (shouldUpdateUsersMusic) {
+        if (shouldUpdateUsersMusic && isHost) {
             updateNewUsersMusic(socketIO)
             setShouldUpdateUsersMusic(false)
         }
@@ -88,13 +88,15 @@ const Roompage = () => {
 
             if (event === "update_user_music") {
                 if (message !== "") {
-                    try {
-                        const currentSongParsed = JSON.parse(data["currentSong"])
-                        setCurrentSong(currentSongParsed)
-                        const queue = JSON.parse(message)
-                        setQueue(queue)
-                    } catch (error) {
-                        console.log(error)
+                    if (!isHost) {
+                        try {
+                            const currentSongParsed = JSON.parse(data["currentSong"])
+                            setCurrentSong(currentSongParsed)
+                            const queue = JSON.parse(message)
+                            setQueue(queue)
+                        } catch (error) {
+                            console.log(error)
+                        }
                     }
                 }
             }
