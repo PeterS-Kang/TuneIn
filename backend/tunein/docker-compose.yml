@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    container_name: tunein
+    volumes:
+      - .:/tunein
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+      - redis
+    expose:
+      - '8000'
+
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'TuneIn'
+      MYSQL_USER: 'tunein'
+      MYSQL_PASSWORD: 'Mira200@'
+      MYSQL_ROOT_PASSWORD: 'Mira200@'
+      MYSQL_AUTHENTICATION_PLUGIN: 'mysql_native_password'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    expose:
+      - '3306'
+
+  redis:
+    image: redis:7.0.5-alpine
+    expose:
+      - 6379
+  
+volumes:
+    mysql_data:

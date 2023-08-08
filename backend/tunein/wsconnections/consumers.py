@@ -21,8 +21,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         print(self.username)
-
+        print(1)
         user = await self.create_user()
+        print(2)
         room = await self.get_room()
 
         print(user)
