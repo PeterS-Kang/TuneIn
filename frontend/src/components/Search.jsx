@@ -32,6 +32,16 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket, spotifyAPIRequest}) =
         }
     }, [queueFetched])
 
+    useEffect(() => {
+        if (isHost) {
+            const jsonStringQueue = JSON.stringify(queue)
+            socket.send(JSON.stringify({
+                event: "update_user_queue",
+                message: jsonStringQueue,
+            }))
+        }
+    }, [queue])
+
     const getMyQueue = () => {
         axios.get('https://api.spotify.com/v1/me/player/queue', {
             headers: {
@@ -72,11 +82,6 @@ const Search = ({queueFetched, isHost, SpotifyAPI, socket, spotifyAPIRequest}) =
             .then(async(response) => {
                 console.log("added to queue")
                 await getMyQueue()
-                const jsonStringQueue = JSON.stringify(queue)
-                socket.send(JSON.stringify({
-                    event: "update_user_queue",
-                    message: jsonStringQueue,
-                }))
             })
             .catch((error) => {
                 console.log(error)
